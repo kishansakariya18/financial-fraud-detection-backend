@@ -14,6 +14,7 @@ const fraudRoutes = require('./routes/fraud.routes');
 const budgetRoutes = require('./routes/budget.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
+const categoryRoutes = require('./routes/category.routes');
 
 // Import middleware
 // TODO: Create middleware files and uncomment
@@ -53,6 +54,7 @@ app.use('/api/v1/fraud', fraudRoutes);
 app.use('/api/v1/budgets', budgetRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/categories', categoryRoutes);
 
 // 404 handler
 app.use((req, res) => {
