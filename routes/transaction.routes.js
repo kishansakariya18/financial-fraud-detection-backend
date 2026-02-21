@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const transactionController = require('../controllers/transaction.controller');
+const { isValidUser } = require('../middleware/authMiddleware');
 // TODO: Import auth middleware when implemented
 // const { authenticate } = require('../middleware/auth.middleware');
 
@@ -13,26 +14,26 @@ const transactionController = require('../controllers/transaction.controller');
 // @route   POST /api/v1/transactions
 // @desc    Create a new transaction
 // @access  Private
-router.post('/', transactionController.createTransaction);
+router.post('/', isValidUser, transactionController.createTransaction);
 
 // @route   GET /api/v1/transactions
 // @desc    Get all transactions (with filters)
 // @access  Private
-router.get('/', transactionController.getAllTransactions);
+router.get('/', isValidUser, transactionController.getAllTransactions);
 
 // @route   GET /api/v1/transactions/user
 // @desc    Get transactions for authenticated user
 // @access  Private
-router.get('/user', transactionController.getTransactionsByUser);
+router.get('/user', isValidUser, transactionController.getTransactionsByUser);
 
 // @route   GET /api/v1/transactions/:id
 // @desc    Get transaction by ID
 // @access  Private
-router.get('/:id', transactionController.getTransactionById);
+router.get('/:id', isValidUser, transactionController.getTransactionById);
 
 // @route   PUT /api/v1/transactions/:id
 // @desc    Update transaction
 // @access  Private
-router.put('/:id', transactionController.updateTransaction);
+router.put('/:id', isValidUser, transactionController.updateTransaction);
 
 module.exports = router;

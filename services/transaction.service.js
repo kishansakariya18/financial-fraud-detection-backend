@@ -38,12 +38,13 @@ const getTransactionsByUser = async (userId, filters) => {
   throw new Error('Method not implemented');
 };
 
-const getAllTransactions = async (filters) => {
+const getAllTransactions = async (userId, filters) => {
   // TODO: Implement get all transactions logic
   // - Apply filters
   // - Pagination
   // - Sorting
-  throw new Error('Method not implemented');
+  const transactions = await transactionRepository.findByUser(userId,filters);
+  return transactions;
 };
 
 const updateTransaction = async (transactionId, updateData) => {

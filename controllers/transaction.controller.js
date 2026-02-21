@@ -34,9 +34,11 @@ const getTransactionsByUser = async (req, res) => {
 
 const getAllTransactions = async (req, res) => {
   try {
-    const result = await transactionService.getAllTransactions(req.query);
+    const result = await transactionService.getAllTransactions(req.user._id,req.query);
     res.status(200).json(result);
   } catch (error) {
+    console.log('error: ', error);
+    
     res.status(error.statusCode || 500).json({ error: error.message });
   }
 };
