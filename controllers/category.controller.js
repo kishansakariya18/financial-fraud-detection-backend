@@ -13,8 +13,7 @@ const getCategories = async (req, res) => {
     });
     
     res.status(200).json({
-      categories,
-      constants: TRANSACTION_CATEGORIES
+      categories
     });
   } catch (error) {
     console.log('error: ', error);
