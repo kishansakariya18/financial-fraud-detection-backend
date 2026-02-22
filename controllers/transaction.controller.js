@@ -34,6 +34,9 @@ const getTransactionsByUser = async (req, res) => {
 
 const getAllTransactions = async (req, res) => {
   try {
+
+    console.log('-----request arrived ----');
+    
     const result = await transactionService.getAllTransactions(req.user._id,req.query);
     res.status(200).json(result);
   } catch (error) {

@@ -17,6 +17,8 @@ const getCategories = async (req, res) => {
       constants: TRANSACTION_CATEGORIES
     });
   } catch (error) {
+    console.log('error: ', error);
+    
     res.status(500).json({ error: error.message });
   }
 };

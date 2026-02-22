@@ -29,7 +29,7 @@ router.get('/user', isValidUser, transactionController.getTransactionsByUser);
 // @route   GET /api/v1/transactions/:id
 // @desc    Get transaction by ID
 // @access  Private
-router.get('/:id', isValidUser, transactionController.getTransactionById);
+router.get('/:id', transactionController.getTransactionById);
 
 // @route   PUT /api/v1/transactions/:id
 // @desc    Update transaction
