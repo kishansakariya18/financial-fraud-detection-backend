@@ -27,7 +27,7 @@ const fraudLogSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["FLAGGED", "REVIEWED", "CONFIRMED", "REJECTED"],
+    enum: ["FLAGGED", "REVIEWED", "CONFIRMED", "REJECTED", "SAFE"],
     default: "FLAGGED"
   },
 

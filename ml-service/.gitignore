@@ -1,0 +1,21 @@
+# Python Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Environment Variables
+.env
+
+# Models and Encoders (Large binary files)
+# *.pkl
+
+# Logs
+*.log
+
+# OS Files
+.DS_Store

@@ -35,7 +35,8 @@ const transactionSchema = new mongoose.Schema({
 
   transactionDate: {
     type: Date,
-    required: true
+    required: true,
+    default: Date.now
   },
 
   location: {

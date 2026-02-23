@@ -77,6 +77,8 @@ app.use((err, req, res, next) => {
   });
 });
 
+const { connectRabbitMQ, closeRabbitMQ } = require('./utils/rabbitmq');
+
 // Initialize fraud detection queue processor
 // TODO: Uncomment when queue is fully implemented
 // processFraudQueue().catch(err => {
@@ -84,20 +86,33 @@ app.use((err, req, res, next) => {
 // });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Fraud Detection API server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-});
+const startServer = async () => {
+  try {
+    // Connect to RabbitMQ first
+    await connectRabbitMQ();
+    
+    // Start the fraud queue processor
+    processFraudQueue();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Fraud Detection API server running on port ${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('SIGTERM signal received: closing HTTP server');
-  app.close(() => {
-    console.log('HTTP server closed');
-    // TODO: Close database connections, queue connections, etc.
-    process.exit(0);
-  });
+  await closeRabbitMQ();
+  // TODO: Close database connections, queue connections, etc.
+  process.exit(0);
 });
 
 module.exports = app;

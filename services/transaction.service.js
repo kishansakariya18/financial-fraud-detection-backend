@@ -8,10 +8,6 @@ const { addToFraudQueue } = require('../queues/fraud.queue');
  */
 
 const createTransaction = async (transactionData, userId) => {
-  // TODO: Implement transaction creation logic
-  // - Validate transaction data
-  // - Create transaction in database
-  // - Trigger fraud detection queue
 
 
    const transaction = await transactionRepository.create({
