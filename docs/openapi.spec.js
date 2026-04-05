@@ -10,7 +10,8 @@ const tags = [
   { name: 'Categories', description: 'User category list (system + custom) for transactions' },
   { name: 'Budgets', description: 'Budget limits' },
   { name: 'Notifications', description: 'In-app notifications' },
-  { name: 'Analytics', description: 'Reports and dashboards' }
+  { name: 'Analytics', description: 'Reports and dashboards' },
+  { name: 'Admin', description: 'Admin panel (role ADMIN)' }
 ];
 
 const components = {
@@ -1165,6 +1166,45 @@ const paths = {
         401: {
           content: {
             'application/json': { schema: { $ref: '#/components/schemas/Unauthorized' } }
+          }
+        },
+        500: {
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Error' } }
+          }
+        }
+      }
+    }
+  },
+  '/api/v1/admin/dashboard': {
+    get: {
+      tags: ['Admin'],
+      summary: 'Admin home dashboard',
+      description:
+        'First-screen KPIs (users, transactions, fraud cases, volume) and Chart.js-style series: transactions per day, volume per day, fraud trends, active users. Requires role ADMIN. Query: optional startDate, endDate (ISO); default last 30 UTC days.',
+      operationId: 'getAdminDashboard',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'startDate', in: 'query', schema: { type: 'string' } },
+        { name: 'endDate', in: 'query', schema: { type: 'string' } }
+      ],
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              schema: { type: 'object', additionalProperties: true }
+            }
+          }
+        },
+        401: {
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Unauthorized' } }
+          }
+        },
+        403: {
+          description: 'User is not ADMIN',
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Error' } }
           }
         },
         500: {
