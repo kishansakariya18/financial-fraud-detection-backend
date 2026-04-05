@@ -44,7 +44,8 @@ exports.consumeFraudCheck = async (transaction) => {
       // Update transaction status
       await transactionRepo.updateFraudStatus(
          transaction._id,
-         mlResult.isFraud ? "FLAGGED" : "SAFE"
+         mlResult.isFraud ? "FLAGGED" : "SAFE",
+         mlResult.score
       );
       
       console.log(`[√] Fraud check complete for transaction ${transaction._id}: ${mlResult.isFraud ? "FLAGGED" : "SAFE"}`);

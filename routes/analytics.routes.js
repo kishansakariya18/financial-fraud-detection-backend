@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const analyticsController = require('../controllers/analytics.controller');
-// TODO: Import auth middleware when implemented
-// const { authenticate } = require('../middleware/auth.middleware');
+const { isValidUser } = require('../middleware/authMiddleware');
 
 /**
  * Analytics Routes
@@ -10,29 +9,24 @@ const analyticsController = require('../controllers/analytics.controller');
  * All routes require authentication
  */
 
-// @route   GET /api/v1/analytics/transactions
-// @desc    Get transaction analytics
-// @access  Private
-router.get('/transactions', analyticsController.getTransactionAnalytics);
+router.get(
+  '/income-vs-expense',
+  isValidUser,
+  analyticsController.getIncomeVsExpenseAnalytics
+);
 
-// @route   GET /api/v1/analytics/fraud
-// @desc    Get fraud detection analytics
-// @access  Private
-router.get('/fraud', analyticsController.getFraudAnalytics);
+router.get(
+  '/transactions',
+  isValidUser,
+  analyticsController.getTransactionAnalytics
+);
 
-// @route   GET /api/v1/analytics/users
-// @desc    Get user analytics
-// @access  Private (Admin only)
-router.get('/users', analyticsController.getUserAnalytics);
+router.get('/fraud', isValidUser, analyticsController.getFraudAnalytics);
 
-// @route   GET /api/v1/analytics/dashboard
-// @desc    Get dashboard statistics
-// @access  Private
-router.get('/dashboard', analyticsController.getDashboardStats);
+router.get('/users', isValidUser, analyticsController.getUserAnalytics);
 
-// @route   POST /api/v1/analytics/report
-// @desc    Generate custom report
-// @access  Private
-router.post('/report', analyticsController.generateReport);
+router.get('/dashboard', isValidUser, analyticsController.getDashboardStats);
+
+router.post('/report', isValidUser, analyticsController.generateReport);
 
 module.exports = router;

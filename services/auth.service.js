@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/user.repository');
-const { Category } = require('../models/category.model');
+const { assignSystemCategoriesToUser } = require('./category.service');
 
 const register = async (userData) => {
    const hashedPassword = await bcrypt.hash(userData.password, 10);
@@ -11,19 +11,7 @@ const register = async (userData) => {
       password: hashedPassword
    });
 
-   const defaultCategories = [
-     { name: "Food & Beverage", type: "EXPENSE" },
-     { name: "Transportation", type: "EXPENSE" },
-     { name: "Shopping", type: "EXPENSE" },
-     { name: "Entertainment", type: "EXPENSE" },
-     { name: "Health & Wellness", type: "EXPENSE" },
-     { name: "Salary", type: "INCOME" },
-     { name: "Investment", type: "INCOME" },
-     { name: "Rent & Utilities", type: "EXPENSE" },
-     { name: "Others", type: "EXPENSE" }
-   ].map(cat => ({ ...cat, createdBy: user._id }));
-
-   await Category.insertMany(defaultCategories);
+   await assignSystemCategoriesToUser(user._id);
 
    return user;
 };

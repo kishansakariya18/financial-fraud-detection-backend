@@ -6,7 +6,8 @@
 const User = require('./user.model');
 const Organization = require('./organization.model');
 const Transaction = require('./transaction.model');
-const Category = require('./category.model');
+const { Category } = require('./category.model');
+const { UserCategory } = require('./userCategory.model');
 const FraudLog = require('./fraudLog.model');
 const Budget = require('./budget.model');
 const Notification = require('./notification.model');
@@ -18,6 +19,7 @@ module.exports = {
   Organization,
   Transaction,
   Category,
+  UserCategory,
   FraudLog,
   Budget,
   Notification,

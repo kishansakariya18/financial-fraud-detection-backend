@@ -1,6 +1,7 @@
+const mongoose = require('mongoose');
 const transactionRepository = require('../repositories/transaction.repository');
-const fraudService = require('./fraud.service');
 const { addToFraudQueue } = require('../queues/fraud.queue');
+const { UserCategory } = require('../models/userCategory.model');
 
 /**
  * Transaction Service
@@ -8,7 +9,18 @@ const { addToFraudQueue } = require('../queues/fraud.queue');
  */
 
 const createTransaction = async (transactionData, userId) => {
-
+   const { categoryId } = transactionData;
+   if (!categoryId || !mongoose.Types.ObjectId.isValid(categoryId)) {
+      const err = new Error('Invalid categoryId');
+      err.statusCode = 400;
+      throw err;
+   }
+   const userCategory = await UserCategory.findOne({ userId, categoryId });
+   if (!userCategory) {
+      const err = new Error('Category is not linked to this user; pick a category from your list');
+      err.statusCode = 400;
+      throw err;
+   }
 
    const transaction = await transactionRepository.create({
       ...transactionData,
@@ -54,10 +66,6 @@ const getAllTransactions = async (userId, filters) => {
 
   const query = {};
 
-  console.log('startDate', startDate);
-  console.log('endDate', endDate);
-  
-
   // Date range filter
   if (startDate || endDate) {
     query.transactionDate = {};
@@ -90,16 +98,47 @@ const getAllTransactions = async (userId, filters) => {
   const options = {
     limit: Number(limit),
     skip,
-    sort: { [sortBy]: sortOrder === 'desc' ? -1 : 1 }
+    sort: { [sortBy]: sortOrder === 'desc' ? -1 : 1 },
+    populateCategory: true
   };
 
-  const [transactions, total] = await Promise.all([
+  const [transactions, total, userCategoryRows] = await Promise.all([
     transactionRepository.findByUser(userId, query, options),
-    transactionRepository.countByUser(userId, query)
+    transactionRepository.countByUser(userId, query),
+    UserCategory.find({ userId }).select('categoryId').lean()
   ]);
 
+  const userCategoryByCategoryId = new Map(
+    userCategoryRows.map((uc) => [String(uc.categoryId), uc._id])
+  );
+
+  const data = transactions.map((tx) => {
+    const plain = tx.toObject ? tx.toObject() : tx;
+    const populated = plain.categoryId && typeof plain.categoryId === 'object' && plain.categoryId._id
+      ? plain.categoryId
+      : null;
+    const categoryObjectId = populated ? populated._id : plain.categoryId;
+
+    return {
+      ...plain,
+      categoryId: categoryObjectId,
+      category: populated
+        ? {
+            _id: populated._id,
+            name: populated.name,
+            type: populated.type,
+            icon: populated.icon,
+            isSystem: populated.isSystem
+          }
+        : null,
+      userCategoryId: categoryObjectId
+        ? userCategoryByCategoryId.get(String(categoryObjectId)) ?? null
+        : null
+    };
+  });
+
   return {
-    data: transactions,
+    data,
     pagination: {
       total,
       page: Number(page),

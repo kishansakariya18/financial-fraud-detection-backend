@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const swaggerUi = require('swagger-ui-express');
+const buildOpenApiSpec = require('./docs/openapi.spec');
 require('dotenv').config();
 
 // Import database connection
@@ -26,9 +28,21 @@ const { processFraudQueue } = require('./queues/fraud.queue');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const openApiSpec = buildOpenApiSpec({ port: PORT });
 
 // Middleware
-app.use(helmet()); // Security headers
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        'script-src': ["'self'", "'unsafe-inline'"],
+        'style-src': ["'self'", "'unsafe-inline'"],
+        'img-src': ["'self'", 'data:', 'https:']
+      }
+    }
+  })
+);
 app.use(cors()); // CORS configuration
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
@@ -46,6 +60,11 @@ app.get('/health', (req, res) => {
   });
 });
 
+// OpenAPI / Swagger UI
+app.get('/api-docs.json', (req, res) => {
+  res.json(openApiSpec);
+});
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, { explorer: true }));
 
 // API Routes
 app.use('/api/v1/auth', authRoutes);
@@ -98,6 +117,8 @@ const startServer = async () => {
       console.log(`🚀 Fraud Detection API server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+      console.log(`📖 API docs (Swagger UI): http://localhost:${PORT}/api-docs`);
+      console.log(`📄 OpenAPI JSON: http://localhost:${PORT}/api-docs.json`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
