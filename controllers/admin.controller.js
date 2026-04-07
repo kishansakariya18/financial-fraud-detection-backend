@@ -9,6 +9,26 @@ const getDashboard = async (req, res) => {
   }
 };
 
+const getUsers = async (req, res) => {
+  try {
+    const result = await adminService.listUsers(req.query);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const result = await adminService.getUserById(req.params.id);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+};
+
 module.exports = {
-  getDashboard
+  getDashboard,
+  getUsers,
+  getUserById
 };

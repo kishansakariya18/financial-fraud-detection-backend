@@ -1214,6 +1214,112 @@ const paths = {
         }
       }
     }
+  },
+  '/api/v1/admin/users': {
+    get: {
+      tags: ['Admin'],
+      summary: 'List users',
+      description:
+        'Paginated user list. Query: page, limit (max 100), search (name/email), role (USER|AUDITOR|ADMIN), isActive (true|false), sortBy (createdAt|name|email|role), sortOrder (asc|desc). Passwords never returned.',
+      operationId: 'adminListUsers',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+        { name: 'limit', in: 'query', schema: { type: 'integer', default: 20, maximum: 100 } },
+        { name: 'search', in: 'query', schema: { type: 'string' } },
+        {
+          name: 'role',
+          in: 'query',
+          schema: { type: 'string', enum: ['USER', 'AUDITOR', 'ADMIN'] }
+        },
+        { name: 'isActive', in: 'query', schema: { type: 'string', enum: ['true', 'false'] } },
+        {
+          name: 'sortBy',
+          in: 'query',
+          schema: {
+            type: 'string',
+            enum: ['createdAt', 'name', 'email', 'role']
+          }
+        },
+        {
+          name: 'sortOrder',
+          in: 'query',
+          schema: { type: 'string', enum: ['asc', 'desc'] }
+        }
+      ],
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              schema: { type: 'object', additionalProperties: true }
+            }
+          }
+        },
+        401: {
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Unauthorized' } }
+          }
+        },
+        403: {
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Error' } }
+          }
+        },
+        500: {
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Error' } }
+          }
+        }
+      }
+    }
+  },
+  '/api/v1/admin/users/{id}': {
+    get: {
+      tags: ['Admin'],
+      summary: 'User detail (admin)',
+      description:
+        'Single user with organization populated when set. No password or refresh token.',
+      operationId: 'adminGetUserById',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      responses: {
+        200: {
+          content: {
+            'application/json': {
+              schema: { type: 'object', additionalProperties: true }
+            }
+          }
+        },
+        400: {
+          description: 'Invalid id',
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Error' } }
+          }
+        },
+        401: {
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Unauthorized' } }
+          }
+        },
+        403: {
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Error' } }
+          }
+        },
+        404: {
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Error' } }
+          }
+        },
+        500: {
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Error' } }
+          }
+        }
+      }
+    }
   }
 };
 

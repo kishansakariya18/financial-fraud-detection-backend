@@ -1,6 +1,8 @@
+const mongoose = require("mongoose");
 const Transaction = require("../models/transaction.model");
 const FraudLog = require("../models/fraudLog.model");
 const User = require("../models/user.model");
+const userRepository = require("../repositories/user.repository");
 
 function parseAdminDateRange(query) {
   const end = query.endDate ? new Date(query.endDate) : new Date();
@@ -276,7 +278,86 @@ async function getAdminDashboard(query) {
   };
 }
 
+/**
+ * Paginated user list (admin). Query: page, limit, search, role, isActive, sortBy, sortOrder.
+ */
+async function listUsers(query) {
+  const page = Math.max(1, parseInt(query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 20));
+
+  const filter = { isDeleted: { $ne: true } };
+  const role = query.role;
+  if (role && ["USER", "AUDITOR", "ADMIN"].includes(String(role).toUpperCase())) {
+    filter.role = String(role).toUpperCase();
+  }
+  if (query.isActive === "true") filter.isActive = true;
+  if (query.isActive === "false") filter.isActive = false;
+
+  if (query.search && String(query.search).trim()) {
+    const s = String(query.search).trim();
+    filter.$or = [
+      { name: { $regex: s, $options: "i" } },
+      { email: { $regex: s, $options: "i" } }
+    ];
+  }
+
+  let sortField = "createdAt";
+  if (query.sortBy === "email") sortField = "email";
+  else if (query.sortBy === "name") sortField = "name";
+  else if (query.sortBy === "role") sortField = "role";
+
+  const sortOrder = query.sortOrder === "asc" ? 1 : -1;
+  const sort = { [sortField]: sortOrder };
+
+  const { users, total, page: p, limit: l } =
+    await userRepository.listUsersPaginated({
+      filter,
+      page,
+      limit,
+      sort
+    });
+
+  return {
+    data: users,
+    pagination: {
+      total,
+      page: p,
+      limit: l,
+      totalPages: Math.ceil(total / l) || 0
+    }
+  };
+}
+
+/**
+ * Single user for admin (no password / refresh token). Organization populated when present.
+ */
+async function getUserById(userId) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    const err = new Error("Invalid user id");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const user = await User.findOne({
+    _id: userId,
+    isDeleted: { $ne: true }
+  })
+    .select("-password -refreshToken")
+    .populate("organizationId", "name industryType contactEmail address")
+    .lean();
+
+  if (!user) {
+    const err = new Error("User not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  return { user };
+}
+
 module.exports = {
   getAdminDashboard,
-  parseAdminDateRange
+  parseAdminDateRange,
+  listUsers,
+  getUserById
 };

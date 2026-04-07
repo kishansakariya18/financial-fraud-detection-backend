@@ -29,6 +29,34 @@ const findAll = async (filters = {}) => {
   return await User.find({ ...filters, isDeleted: false });
 };
 
+/**
+ * Paginated user list for admin (password and refreshToken excluded).
+ */
+const listUsersPaginated = async ({
+  filter = {},
+  page = 1,
+  limit = 20,
+  sort = { createdAt: -1 }
+}) => {
+  const skip = (Number(page) - 1) * Number(limit);
+  const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 100);
+  const [users, total] = await Promise.all([
+    User.find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(safeLimit)
+      .select("-password -refreshToken")
+      .lean(),
+    User.countDocuments(filter)
+  ]);
+  return {
+    users,
+    total,
+    page: Number(page),
+    limit: safeLimit
+  };
+};
+
 const updateRefreshToken = async (userId, refreshToken) => {
   return await User.findByIdAndUpdate(userId, { refreshToken }, { new: true });
 };
@@ -44,6 +72,7 @@ module.exports = {
   update,
   deleteUser,
   findAll,
+  listUsersPaginated,
   updateRefreshToken,
   clearRefreshToken
 };

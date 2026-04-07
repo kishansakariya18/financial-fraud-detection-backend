@@ -16,4 +16,8 @@ router.get(
   adminController.getDashboard
 );
 
+router.get("/users", isValidUser, requireAdmin, adminController.getUsers);
+
+router.get("/users/:id", isValidUser, requireAdmin, adminController.getUserById);
+
 module.exports = router;
